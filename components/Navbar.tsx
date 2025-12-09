@@ -65,7 +65,7 @@ export function Navbar() {
         {/* Right side */}
         <div className="flex items-center gap-4 md:gap-6">
           <Link
-            href="/quiz"
+            href="/test"
             className={`px-4 py-2 rounded-md border border-purple-500 font-semibold transition ${
               theme === "dark" ? "bg-black text-white" : "bg-white text-black"
             }`}
