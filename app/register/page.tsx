@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useThemeLanguage } from "@/ThemeLanguageContext";
 
 export default function RegisterPage() {
-  const { theme, setTheme, language } = useThemeLanguage();
+  const { theme, language } = useThemeLanguage();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -82,9 +82,6 @@ export default function RegisterPage() {
         >
           {loading ? (language === "en" ? "Registering..." : "Бүртгэж байна...") : language === "en" ? "Register" : "Бүртгүүлэх"}
         </button>
-
-        <div className="mt-4 flex justify-center text-sm text-purple-500">
-        </div>
       </form>
     </div>
   );

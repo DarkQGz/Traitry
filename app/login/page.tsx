@@ -5,7 +5,7 @@ import { signIn } from "next-auth/react";
 import { useThemeLanguage } from "@/ThemeLanguageContext";
 
 export default function LoginPage() {
-  const { theme, setTheme, language } = useThemeLanguage();
+  const { theme, language } = useThemeLanguage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -61,9 +61,6 @@ export default function LoginPage() {
         >
           {loading ? (language === "en" ? "Logging in..." : "Нэвтрэх...") : language === "en" ? "Login" : "Нэвтрэх"}
         </button>
-
-        <div className="mt-4 flex justify-center text-sm text-purple-500">
-        </div>
       </form>
     </div>
   );

@@ -1,21 +1,25 @@
-import type { NextApiRequest, NextApiResponse } from "next";
-import { getDB } from "../../../utils/db";
+import { NextApiRequest, NextApiResponse } from "next";
 import bcrypt from "bcryptjs";
+import db from "@/utils/db";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") return res.status(405).json({ message: "Method not allowed" });
 
   const { name, email, password } = req.body;
 
-  const db = await getDB();
+  if (!name || !email || !password)
+    return res.status(400).json({ message: "All fields are required" });
 
-  const existing = await db.get("SELECT * FROM users WHERE email = ?", email);
-  if (existing) return res.status(422).json({ message: "User already exists" });
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const stmt = db.prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
+    stmt.run(name, email, hashedPassword);
 
-  const hashed = await bcrypt.hash(password, 12);
-  await db.run("INSERT INTO users (name, email, password, createdAt) VALUES (?, ?, ?, ?)", 
-    name, email, hashed, new Date().toISOString()
-  );
-
-  res.status(201).json({ message: "User created" });
+    return res.status(201).json({ message: "User registered successfully" });
+  } catch (err: any) {
+    if (err.code === "SQLITE_CONSTRAINT_UNIQUE") {
+      return res.status(400).json({ message: "Email already exists" });
+    }
+    return res.status(500).json({ message: "Internal server error" });
+  }
 }

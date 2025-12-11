@@ -1,28 +1,50 @@
-import NextAuth from "next-auth";
+// pages/api/auth/[...nextauth].ts
+import NextAuth, { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { getDB } from "../../../utils/db";
+import db from "@/utils/db"; // your db.ts
 import bcrypt from "bcryptjs";
 
-export default NextAuth({
+export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
-      credentials: { email: {}, password: {} },
+      credentials: {
+        email: { label: "Email", type: "text" },
+        password: { label: "Password", type: "password" },
+      },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials.password) return null;
+        if (!credentials) return null;
 
-        const db = await getDB();
-        const user = await db.get("SELECT * FROM users WHERE email = ?", credentials.email);
-        if (!user) return null;
+        const user = db
+          .prepare("SELECT * FROM users WHERE email = ?")
+          .get(credentials.email);
 
-        const isValid = await bcrypt.compare(credentials.password, user.password);
-        if (!isValid) return null;
+        if (user && (await bcrypt.compare(credentials.password, user.password))) {
+          // Return name and email for NextAuth
+          return { name: user.name, email: user.email, id: user.id } as any;
+        }
 
-        return { id: user.id.toString(), name: user.name, email: user.email };
+        return null;
       },
     }),
   ],
+
   session: { strategy: "jwt" },
-  pages: { signIn: "/login" },
-  secret: process.env.NEXTAUTH_SECRET || "super-secret",
-});
+
+  pages: {
+    signIn: "/login",
+  },
+
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) token.id = (user as any).id; // attach id to JWT
+      return token;
+    },
+    async session({ session, token }) {
+      (session.user as any).id = token.id; // attach id to session
+      return session;
+    },
+  },
+};
+
+export default NextAuth(authOptions);

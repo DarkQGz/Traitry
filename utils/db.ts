@@ -1,26 +1,23 @@
-import sqlite3 from "sqlite3";
-import { open, Database } from "sqlite";
+import Database from "better-sqlite3";
+import fs from "fs";
 import path from "path";
 
-let db: Database<sqlite3.Database, sqlite3.Statement>;
-
-export async function getDB() {
-  if (!db) {
-    const dbPath = path.join(process.cwd(), "data.db");
-    db = await open({
-      filename: dbPath,
-      driver: sqlite3.Database,
-    });
-
-    await db.exec(`
-      CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        email TEXT NOT NULL UNIQUE,
-        password TEXT NOT NULL,
-        createdAt TEXT NOT NULL
-      )
-    `);
-  }
-  return db;
+const dbDir = path.join(process.cwd(), "db");
+if (!fs.existsSync(dbDir)) {
+  fs.mkdirSync(dbDir, { recursive: true });
 }
+
+const dbPath = path.join(dbDir, "dev.db");
+const db = new Database(dbPath);
+
+// Initialize users table
+db.prepare(`
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL
+  )
+`).run();
+
+export default db;
