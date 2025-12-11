@@ -1,11 +1,17 @@
 "use client";
+
 import { useState } from "react";
+import { useThemeLanguage } from "@/ThemeLanguageContext";
 
 export default function RegisterPage() {
+  const { theme, setTheme, language } = useThemeLanguage();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const pageBgClass = theme === "dark" ? "bg-black" : "bg-white";
+  const formBgClass = theme === "dark" ? "bg-black text-white" : "bg-white text-black";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,26 +23,68 @@ export default function RegisterPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
       });
-
       const data = await res.json();
-      if (!res.ok) alert(data.message || "Registration failed");
-      else alert("Registration successful! You can now log in.");
+
+      if (!res.ok)
+        alert(data.message || (language === "en" ? "Registration failed" : "Бүртгэл амжилтгүй боллоо"));
+      else
+        alert(
+          language === "en"
+            ? "Registration successful! You can now log in."
+            : "Бүртгэл амжилттай боллоо! Одоо нэвтэрч болно."
+        );
     } catch (err) {
       console.error(err);
-      alert("Something went wrong");
+      alert(language === "en" ? "Something went wrong" : "Алдаа гарлаа");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <form onSubmit={handleSubmit} className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
-        <h1 className="text-3xl font-bold text-center mb-6">Register</h1>
-        <input type="text" placeholder="Name" value={name} onChange={e=>setName(e.target.value)} className="w-full p-3 border mb-4 rounded focus:ring-2 focus:ring-blue-500" required />
-        <input type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} className="w-full p-3 border mb-4 rounded focus:ring-2 focus:ring-blue-500" required />
-        <input type="password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} className="w-full p-3 border mb-6 rounded focus:ring-2 focus:ring-blue-500" required />
-        <button type="submit" className="w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700">{loading ? "Registering..." : "Register"}</button>
+    <div className={`${pageBgClass} min-h-screen flex items-center justify-center transition-colors duration-500`}>
+      <form
+        className={`${formBgClass} w-full max-w-md p-8 border border-purple-500 rounded-lg shadow-lg transition-colors duration-500`}
+        onSubmit={handleSubmit}
+      >
+        <h1 className="text-3xl font-bold mb-6 text-center">{language === "en" ? "Register" : "Бүртгүүлэх"}</h1>
+
+        <input
+          type="text"
+          placeholder={language === "en" ? "Name" : "Нэр"}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="w-full p-3 mb-4 border-2 border-purple-500 rounded bg-transparent placeholder-purple-500 focus:outline-none"
+          required
+        />
+
+        <input
+          type="email"
+          placeholder={language === "en" ? "Email" : "Имэйл"}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full p-3 mb-4 border-2 border-purple-500 rounded bg-transparent placeholder-purple-500 focus:outline-none"
+          required
+        />
+
+        <input
+          type="password"
+          placeholder={language === "en" ? "Password" : "Нууц үг"}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full p-3 mb-6 border-2 border-purple-500 rounded bg-transparent placeholder-purple-500 focus:outline-none"
+          required
+        />
+
+        <button
+          type="submit"
+          className="w-full py-3 rounded border-2 border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white transition"
+        >
+          {loading ? (language === "en" ? "Registering..." : "Бүртгэж байна...") : language === "en" ? "Register" : "Бүртгүүлэх"}
+        </button>
+
+        <div className="mt-4 flex justify-center text-sm text-purple-500">
+        </div>
       </form>
     </div>
   );

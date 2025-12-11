@@ -3,12 +3,18 @@
 import Link from "next/link";
 import { useThemeLanguage } from "../ThemeLanguageContext";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 
 export function Navbar() {
   const { theme, setTheme, language, setLanguage } = useThemeLanguage();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { data: session, status } = useSession();
+  const [mounted, setMounted] = useState(false);
+
+  // Avoid hydration errors
+  useEffect(() => setMounted(true), []);
 
   const navBg =
     theme === "dark"
@@ -16,6 +22,8 @@ export function Navbar() {
       : "bg-white border-black/10 text-black";
 
   const isActive = (path: string) => pathname === path;
+
+  if (!mounted) return null; // prevents SSR mismatch
 
   return (
     <nav
@@ -44,8 +52,18 @@ export function Navbar() {
           {/* Desktop buttons */}
           <div className="hidden md:flex gap-4">
             <Link href="/test" className={`px-4 py-2 rounded-md border border-purple-500 font-semibold transition ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>Start Test</Link>
-            <Link href="/login" className={`px-4 py-2 rounded-md border border-purple-500 font-semibold transition ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>Login</Link>
-            <Link href="/register" className={`px-4 py-2 rounded-md border border-purple-500 font-semibold transition ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>Register</Link>
+
+            {session ? (
+              <Link href="/profile" className={`px-4 py-2 rounded-md border border-purple-500 font-semibold transition ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>
+                {language === "en" ? "Profile" : "Профайл"}
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" className={`px-4 py-2 rounded-md border border-purple-500 font-semibold transition ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>Login</Link>
+                <Link href="/register" className={`px-4 py-2 rounded-md border border-purple-500 font-semibold transition ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>Register</Link>
+              </>
+            )}
+
             <button
               onClick={() => setLanguage(language === "en" ? "mn" : "en")}
               className={`px-3 py-1 rounded-md border border-purple-500 font-semibold transition ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}
@@ -97,8 +115,17 @@ export function Navbar() {
           <Link href="/articles" className={`transition ${isActive("/articles") ? "text-purple-300" : "hover:text-purple-300"}`}>Articles</Link>
           <Link href="/about" className={`transition ${isActive("/about") ? "text-purple-300" : "hover:text-purple-300"}`}>About</Link>
           <Link href="/test" className={`px-4 py-2 rounded-md border border-purple-500 font-semibold transition ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>Start Test</Link>
-          <Link href="/login" className={`px-4 py-2 rounded-md border border-purple-500 font-semibold transition ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>Login</Link>
-          <Link href="/register" className={`px-4 py-2 rounded-md border border-purple-500 font-semibold transition ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>Register</Link>
+
+          {session ? (
+            <Link href="/profile" className={`px-4 py-2 rounded-md border border-purple-500 font-semibold transition ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>
+              {language === "en" ? "Profile" : "Профайл"}
+            </Link>
+          ) : (
+            <>
+              <Link href="/login" className={`px-4 py-2 rounded-md border border-purple-500 font-semibold transition ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>Login</Link>
+              <Link href="/register" className={`px-4 py-2 rounded-md border border-purple-500 font-semibold transition ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>Register</Link>
+            </>
+          )}
         </div>
       )}
     </nav>
