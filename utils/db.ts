@@ -1,21 +1,13 @@
-import Database from "better-sqlite3";
-import fs from "fs";
-import path from "path";
+// utils/db.ts
+import { createClient } from "@libsql/client";
 
-const dbDir = path.join(process.cwd(), "db");
-if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
+if (!process.env.TURSO_DATABASE_URL || !process.env.TURSO_AUTH_TOKEN) {
+  throw new Error("TURSO_DATABASE_URL and TURSO_AUTH_TOKEN must be set in environment");
+}
 
-const dbPath = path.join(dbDir, "dev.db");
-const db = new Database(dbPath);
-
-// Initialize users table
-db.prepare(`
-  CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    email TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL
-  )
-`).run();
+const db = createClient({
+  url: process.env.TURSO_DATABASE_URL,
+  authToken: process.env.TURSO_AUTH_TOKEN,
+});
 
 export default db;

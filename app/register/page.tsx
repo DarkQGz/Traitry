@@ -1,3 +1,4 @@
+// app/register/page.tsx
 "use client";
 
 import { useState } from "react";
@@ -13,8 +14,8 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleRegister = async (e?: React.FormEvent) => {
+    e?.preventDefault?.();
     if (!name || !email || !password) {
       alert(language === "en" ? "Please fill all fields." : "Бүх талбарыг бөглөнө үү.");
       return;
@@ -30,6 +31,7 @@ export default function RegisterPage() {
       });
 
       const data = await res.json();
+
       if (res.ok) {
         alert(language === "en" ? "Registered successfully! Now login." : "Бүртгэл амжилттай! Одоо нэвтэрнэ үү.");
         router.push("/login");
@@ -46,13 +48,8 @@ export default function RegisterPage() {
 
   return (
     <div className={`${theme === "dark" ? "bg-black text-white" : "bg-white text-black"} min-h-screen flex items-center justify-center p-8`}>
-      <form
-        className="w-full max-w-md p-8 border border-purple-500 rounded-lg shadow-lg"
-        onSubmit={handleRegister}
-      >
-        <h1 className="text-3xl font-bold mb-6 text-center">
-          {language === "en" ? "Register" : "Бүртгүүлэх"}
-        </h1>
+      <form className="w-full max-w-md p-8 border border-purple-500 rounded-lg shadow-lg" onSubmit={handleRegister}>
+        <h1 className="text-3xl font-bold mb-6 text-center">{language === "en" ? "Register" : "Бүртгүүлэх"}</h1>
 
         <input
           type="text"
@@ -88,10 +85,7 @@ export default function RegisterPage() {
           {loading ? (language === "en" ? "Registering..." : "Бүртгүүлж байна...") : language === "en" ? "Register" : "Бүртгүүлэх"}
         </button>
 
-        <p
-          className="mt-4 text-center text-sm cursor-pointer hover:underline"
-          onClick={() => router.push("/login")}
-        >
+        <p className="mt-4 text-center text-sm cursor-pointer hover:underline" onClick={() => router.push("/login")}>
           {language === "en" ? "Already have an account? Login" : "Аль хэдийн бүртгэлтэй юу? Нэвтрэх"}
         </p>
       </form>
