@@ -25,14 +25,8 @@ export default function RegisterPage() {
       });
       const data = await res.json();
 
-      if (!res.ok)
-        alert(data.message || (language === "en" ? "Registration failed" : "Бүртгэл амжилтгүй боллоо"));
-      else
-        alert(
-          language === "en"
-            ? "Registration successful! You can now log in."
-            : "Бүртгэл амжилттай боллоо! Одоо нэвтэрч болно."
-        );
+      if (!res.ok) alert(data.message);
+      else window.location.href = "/login";
     } catch (err) {
       console.error(err);
       alert(language === "en" ? "Something went wrong" : "Алдаа гарлаа");

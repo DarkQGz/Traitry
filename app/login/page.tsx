@@ -24,7 +24,7 @@ export default function LoginPage() {
     });
 
     if (res?.error) alert(res.error);
-    else alert(language === "en" ? "Login successful!" : "Амжилттай нэвтэрлээ!");
+    else window.location.href = "/profile"; // redirect on success
 
     setLoading(false);
   };

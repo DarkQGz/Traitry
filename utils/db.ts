@@ -3,14 +3,12 @@ import fs from "fs";
 import path from "path";
 
 const dbDir = path.join(process.cwd(), "db");
-if (!fs.existsSync(dbDir)) {
-  fs.mkdirSync(dbDir, { recursive: true });
-}
+if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
 
 const dbPath = path.join(dbDir, "dev.db");
 const db = new Database(dbPath);
 
-// Initialize users table
+// Create users table if it doesn't exist
 db.prepare(`
   CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

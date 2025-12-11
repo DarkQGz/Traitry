@@ -6,20 +6,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method !== "POST") return res.status(405).json({ message: "Method not allowed" });
 
   const { name, email, password } = req.body;
-
   if (!name || !email || !password)
-    return res.status(400).json({ message: "All fields are required" });
+    return res.status(400).json({ message: "Missing fields" });
 
-  try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const stmt = db.prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
-    stmt.run(name, email, hashedPassword);
+  const exists = db.prepare("SELECT * FROM users WHERE email = ?").get(email);
+  if (exists) return res.status(400).json({ message: "Email already registered" });
 
-    return res.status(201).json({ message: "User registered successfully" });
-  } catch (err: any) {
-    if (err.code === "SQLITE_CONSTRAINT_UNIQUE") {
-      return res.status(400).json({ message: "Email already exists" });
-    }
-    return res.status(500).json({ message: "Internal server error" });
-  }
+  const hashedPassword = await bcrypt.hash(password, 10);
+  db.prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)").run(
+    name,
+    email,
+    hashedPassword
+  );
+
+  res.status(201).json({ message: "User registered successfully" });
 }

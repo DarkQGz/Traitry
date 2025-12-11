@@ -1,7 +1,6 @@
-// pages/api/auth/[...nextauth].ts
 import NextAuth, { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import db from "@/utils/db"; // your db.ts
+import db from "@/utils/db";
 import bcrypt from "bcryptjs";
 
 export const authOptions: AuthOptions = {
@@ -13,37 +12,24 @@ export const authOptions: AuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials) return null;
+        const user = db.prepare("SELECT * FROM users WHERE email = ?").get(credentials!.email);
 
-        const user = db
-          .prepare("SELECT * FROM users WHERE email = ?")
-          .get(credentials.email);
-
-        if (user && (await bcrypt.compare(credentials.password, user.password))) {
-          // Return name and email for NextAuth
-          return { name: user.name, email: user.email, id: user.id } as any;
+        if (user && (await bcrypt.compare(credentials!.password, user.password))) {
+          return {
+            id: user.id.toString(), // id must be string
+            name: user.name,
+            email: user.email,
+          };
         }
-
         return null;
       },
     }),
   ],
-
-  session: { strategy: "jwt" },
-
+  session: {
+    strategy: "jwt",
+  },
   pages: {
     signIn: "/login",
-  },
-
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) token.id = (user as any).id; // attach id to JWT
-      return token;
-    },
-    async session({ session, token }) {
-      (session.user as any).id = token.id; // attach id to session
-      return session;
-    },
   },
 };
 
