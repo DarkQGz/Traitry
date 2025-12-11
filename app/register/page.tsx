@@ -19,15 +19,8 @@ export default function RegisterPage() {
       });
 
       const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.message || "Registration failed");
-      } else {
-        alert("Registration successful! You can now log in.");
-        setName("");
-        setEmail("");
-        setPassword("");
-      }
+      if (!res.ok) alert(data.message || "Registration failed");
+      else alert("Registration successful! You can now log in.");
     } catch (err) {
       console.error(err);
       alert("Something went wrong");
@@ -38,46 +31,12 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg"
-      >
+      <form onSubmit={handleSubmit} className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
         <h1 className="text-3xl font-bold text-center mb-6">Register</h1>
-
-        <label className="block mb-2 font-semibold">Name</label>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-          className="w-full p-3 border border-gray-300 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-
-        <label className="block mb-2 font-semibold">Email</label>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="w-full p-3 border border-gray-300 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-
-        <label className="block mb-2 font-semibold">Password</label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          className="w-full p-3 border border-gray-300 rounded mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          {loading ? "Registering..." : "Register"}
-        </button>
+        <input type="text" placeholder="Name" value={name} onChange={e=>setName(e.target.value)} className="w-full p-3 border mb-4 rounded focus:ring-2 focus:ring-blue-500" required />
+        <input type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} className="w-full p-3 border mb-4 rounded focus:ring-2 focus:ring-blue-500" required />
+        <input type="password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} className="w-full p-3 border mb-6 rounded focus:ring-2 focus:ring-blue-500" required />
+        <button type="submit" className="w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700">{loading ? "Registering..." : "Register"}</button>
       </form>
     </div>
   );
