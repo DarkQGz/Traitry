@@ -1,13 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useThemeLanguage } from "../../ThemeLanguageContext";
-import { questions } from "../../data/questions"; // import your JSON
-import Link from "next/link";
-
-interface Answer {
-  [questionId: string]: number | string;
-}
+import { questions } from "../../utils/questions";
+import Quiz from "../../components/Quiz";
+import { Answer, Question } from "../../types/types";
 
 const QUESTIONS_PER_PAGE = 20;
 
@@ -16,32 +13,36 @@ export default function TestPage() {
   const [currentPage, setCurrentPage] = useState(0);
   const [answers, setAnswers] = useState<Answer>({});
 
-  // Filter questions dynamically based on previous answers
-  const adaptiveQuestions = useMemo(() => {
-    return questions.filter(q => {
-      if (!q.dependsOn) return true;
-      return Object.entries(q.dependsOn).every(([depId, condition]) => {
-        const prevAnswer = answers[depId];
-        if (prevAnswer === undefined) return false;
-        if ("min" in condition) return prevAnswer >= condition.min;
-        if ("max" in condition) return prevAnswer <= condition.max;
-        if ("equals" in condition) return prevAnswer === condition.equals;
-        return true;
-      });
-    });
-  }, [answers]);
-
-  const totalPages = Math.ceil(adaptiveQuestions.length / QUESTIONS_PER_PAGE);
-  const currentQuestions = adaptiveQuestions.slice(
+  const totalPages = Math.ceil(questions.length / QUESTIONS_PER_PAGE);
+  const currentQuestions: Question[] = questions.slice(
     currentPage * QUESTIONS_PER_PAGE,
     (currentPage + 1) * QUESTIONS_PER_PAGE
   );
 
-  const handleAnswer = (id: string, value: number | string) => {
-    setAnswers(prev => ({ ...prev, [id]: value }));
-  };
+  // Load progress
+  useEffect(() => {
+    const saved = localStorage.getItem("traitry-progress");
+    if (saved) {
+      const data = JSON.parse(saved);
+      setAnswers(data.answers || {});
+      setCurrentPage(data.currentPage || 0);
+    }
+  }, []);
+
+  // Auto-save progress
+  useEffect(() => {
+    localStorage.setItem(
+      "traitry-progress",
+      JSON.stringify({ answers, currentPage })
+    );
+  }, [answers, currentPage]);
 
   const handleNext = () => {
+    const unanswered = currentQuestions.some(q => answers[q.id] === undefined);
+    if (unanswered) {
+      alert(language === "en" ? "Please answer all questions." : "Бүх асуултад хариулна уу.");
+      return;
+    }
     if (currentPage < totalPages - 1) setCurrentPage(prev => prev + 1);
   };
 
@@ -49,80 +50,48 @@ export default function TestPage() {
     if (currentPage > 0) setCurrentPage(prev => prev - 1);
   };
 
+  const handleFinish = () => {
+    const unanswered = currentQuestions.some(q => answers[q.id] === undefined);
+    if (unanswered) {
+      alert(language === "en" ? "Please answer all questions." : "Бүх асуултад хариулна уу.");
+      return;
+    }
+
+    localStorage.setItem("traitry-answers", JSON.stringify(answers));
+    window.location.href = "/result";
+  };
+
+  const progressPercent = Math.round((currentPage / totalPages) * 100);
+
   return (
     <div
-      className={`flex flex-col min-h-screen px-6 py-12 ${
+      className={`flex flex-col min-h-screen px-6 pt-32 pb-12 ${
         theme === "dark" ? "bg-black text-white" : "bg-white text-black"
       }`}
     >
-      <h1 className="text-3xl font-bold mb-6 text-center">
-        {language === "en" ? "Personality Test" : "Зан төлөвийн тест"}
-      </h1>
-
-      <div className="mb-6">
-        <div className="h-2 bg-gray-300 rounded-full">
+      <div className="fixed top-16 left-1/2 transform -translate-x-1/2 w-11/12 max-w-4xl z-50">
+        <div className={`h-2 rounded-full ${theme === "dark" ? "bg-gray-700" : "bg-gray-300"}`}>
           <div
-            className="h-2 bg-purple-500 rounded-full"
-            style={{
-              width: `${((currentPage + 1) / totalPages) * 100}%`,
-            }}
+            className={`h-2 rounded-full ${
+              theme === "dark" ? "bg-purple-400" : "bg-purple-500"
+            } transition-all`}
+            style={{ width: `${progressPercent}%` }}
           />
         </div>
-        <p className="text-sm mt-1 text-center">
-          {language === "en"
-            ? `Page ${currentPage + 1} of ${totalPages}`
-            : `${currentPage + 1} хуудас / ${totalPages} нийт`}
-        </p>
+        <p className="text-center mt-1 font-medium text-sm">{progressPercent}%</p>
       </div>
 
-      <div className="flex flex-col gap-6">
-        {currentQuestions.map(q => (
-          <div key={q.id}>
-            <p className="mb-2 font-medium">{q.text[language]}</p>
-            {q.type === "scale" && (
-              <div className="flex gap-3">
-                {[...Array(q.scale)].map((_, i) => {
-                  const val = i + 1;
-                  return (
-                    <button
-                      key={i}
-                      onClick={() => handleAnswer(q.id, val)}
-                      className={`px-3 py-1 rounded-md border transition ${
-                        answers[q.id] === val
-                          ? "bg-purple-500 text-white"
-                          : theme === "dark"
-                          ? "bg-black border-white text-white"
-                          : "bg-white border-black text-black"
-                      }`}
-                    >
-                      {val}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-            {q.type === "single" && q.options && (
-              <div className="flex flex-col gap-2">
-                {q.options.map(opt => (
-                  <button
-                    key={opt}
-                    onClick={() => handleAnswer(q.id, opt)}
-                    className={`px-3 py-1 rounded-md border transition ${
-                      answers[q.id] === opt
-                        ? "bg-purple-500 text-white"
-                        : theme === "dark"
-                        ? "bg-black border-white text-white"
-                        : "bg-white border-black text-black"
-                    }`}
-                  >
-                    {opt}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
+      <Quiz
+        questions={currentQuestions}
+        answers={answers}
+        setAnswers={(id: string, value: string | number) =>
+          setAnswers(prev => ({ ...prev, [id]: value }))
+        }
+        theme={theme}
+        language={language}
+        currentPage={currentPage}
+        totalPages={totalPages}
+      />
 
       <div className="flex justify-between mt-8">
         <button
@@ -132,6 +101,7 @@ export default function TestPage() {
         >
           {language === "en" ? "Back" : "Буцах"}
         </button>
+
         {currentPage < totalPages - 1 ? (
           <button
             onClick={handleNext}
@@ -140,12 +110,12 @@ export default function TestPage() {
             {language === "en" ? "Next" : "Дараах"}
           </button>
         ) : (
-          <Link
-            href="/result"
+          <button
+            onClick={handleFinish}
             className="px-4 py-2 rounded-md border border-purple-500 font-semibold transition"
           >
             {language === "en" ? "Finish Test" : "Тестийг дуусгах"}
-          </Link>
+          </button>
         )}
       </div>
     </div>

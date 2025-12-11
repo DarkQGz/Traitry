@@ -1,14 +1,12 @@
-// utils/utils.ts
-import { Answer, Question, Condition } from "../types/types";
+export function checkConditions(
+  value: number | string | undefined,
+  rule: { min?: number; max?: number; equals?: number | string }
+): boolean {
+  if (value === undefined) return false;
 
-export const checkConditions = (answer: Answer, condition?: Condition): boolean => {
-  if (!condition) return true;
-
-  const answerNum = Number(answer);
-
-  if (condition.min !== undefined && answerNum < condition.min) return false;
-  if (condition.max !== undefined && answerNum > condition.max) return false;
-  if (condition.equals !== undefined && answer !== condition.equals) return false;
+  if (rule.min !== undefined && (value as number) < rule.min) return false;
+  if (rule.max !== undefined && (value as number) > rule.max) return false;
+  if (rule.equals !== undefined && value !== rule.equals) return false;
 
   return true;
-};
+}

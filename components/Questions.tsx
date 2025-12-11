@@ -1,28 +1,26 @@
 "use client";
-
 import React from "react";
-import { Question, Answer } from "../types/types";
+import { Question } from "../types/types";
+import { Answer } from "../types/types";
 import { QuestionComponent } from "./QuestionComponent";
 
-interface QuizProps {
+interface Props {
   questions: Question[];
   answers: Answer;
   setAnswers: (id: string, value: string | number) => void;
   theme: "light" | "dark";
   language: "en" | "mn";
-  currentPage: number;  // still passed for reference if needed
-  totalPages: number;   // still passed for reference if needed
 }
 
-const Quiz: React.FC<QuizProps> = ({ questions, answers, setAnswers, theme, language }) => {
+export const Questions: React.FC<Props> = ({ questions, answers, setAnswers, theme, language }) => {
   return (
-    <div className="flex flex-col gap-6 pt-2">
+    <div className="flex flex-col items-center gap-6">
       {questions.map((q) => (
         <QuestionComponent
           key={q.id}
           question={q}
           answer={answers[q.id]}
-          setAnswer={setAnswers}
+          setAnswer={setAnswers} // matches prop in QuestionComponent
           theme={theme}
           language={language}
         />
@@ -30,5 +28,3 @@ const Quiz: React.FC<QuizProps> = ({ questions, answers, setAnswers, theme, lang
     </div>
   );
 };
-
-export default Quiz;
