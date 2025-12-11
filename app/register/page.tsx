@@ -2,16 +2,15 @@
 
 import { useState } from "react";
 import { useThemeLanguage } from "@/ThemeLanguageContext";
+import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
   const { theme, language } = useThemeLanguage();
+  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const pageBgClass = theme === "dark" ? "bg-black" : "bg-white";
-  const formBgClass = theme === "dark" ? "bg-black text-white" : "bg-white text-black";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,10 +22,13 @@ export default function RegisterPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
       });
-      const data = await res.json();
 
-      if (!res.ok) alert(data.message);
-      else window.location.href = "/login";
+      const data = await res.json();
+      if (!res.ok) alert(data.message || (language === "en" ? "Registration failed" : "Бүртгэл амжилтгүй боллоо"));
+      else {
+        alert(language === "en" ? "Registration successful! Please login." : "Бүртгэл амжилттай боллоо! Одоо нэвтэрч болно.");
+        router.push("/login");
+      }
     } catch (err) {
       console.error(err);
       alert(language === "en" ? "Something went wrong" : "Алдаа гарлаа");
@@ -36,11 +38,8 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className={`${pageBgClass} min-h-screen flex items-center justify-center transition-colors duration-500`}>
-      <form
-        className={`${formBgClass} w-full max-w-md p-8 border border-purple-500 rounded-lg shadow-lg transition-colors duration-500`}
-        onSubmit={handleSubmit}
-      >
+    <div className={`${theme === "dark" ? "bg-black text-white" : "bg-white text-black"} min-h-screen flex items-center justify-center p-8`}>
+      <form className="w-full max-w-md p-8 border border-purple-500 rounded-lg shadow-lg" onSubmit={handleSubmit}>
         <h1 className="text-3xl font-bold mb-6 text-center">{language === "en" ? "Register" : "Бүртгүүлэх"}</h1>
 
         <input

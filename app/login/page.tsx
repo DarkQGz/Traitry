@@ -3,15 +3,14 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useThemeLanguage } from "@/ThemeLanguageContext";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const { theme, language } = useThemeLanguage();
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const pageBgClass = theme === "dark" ? "bg-black" : "bg-white";
-  const formBgClass = theme === "dark" ? "bg-black text-white" : "bg-white text-black";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,18 +22,18 @@ export default function LoginPage() {
       password,
     });
 
-    if (res?.error) alert(res.error);
-    else window.location.href = "/profile"; // redirect on success
+    if (res?.error) {
+      alert(res.error);
+    } else {
+      router.push("/profile"); // redirect to profile after login
+    }
 
     setLoading(false);
   };
 
   return (
-    <div className={`${pageBgClass} min-h-screen flex items-center justify-center transition-colors duration-500`}>
-      <form
-        className={`${formBgClass} w-full max-w-md p-8 border border-purple-500 rounded-lg shadow-lg transition-colors duration-500`}
-        onSubmit={handleSubmit}
-      >
+    <div className={`${theme === "dark" ? "bg-black text-white" : "bg-white text-black"} min-h-screen flex items-center justify-center p-8`}>
+      <form className="w-full max-w-md p-8 border border-purple-500 rounded-lg shadow-lg" onSubmit={handleSubmit}>
         <h1 className="text-3xl font-bold mb-6 text-center">{language === "en" ? "Login" : "Нэвтрэх"}</h1>
 
         <input

@@ -8,7 +8,7 @@ if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
 const dbPath = path.join(dbDir, "dev.db");
 const db = new Database(dbPath);
 
-// Create users table if it doesn't exist
+// Initialize users table
 db.prepare(`
   CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
