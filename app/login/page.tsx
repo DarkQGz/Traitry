@@ -1,20 +1,28 @@
 "use client";
+import { signIn } from "next-auth/react";
+import { useState } from "react";
 
-import { useThemeLanguage } from "../../ThemeLanguageContext"; // adjust path depending on location
 export default function LoginPage() {
-  const { theme, language } = useThemeLanguage();
-  const texts = {
-    en: { title: "Login", description: "Login to access your dashboard and results." },
-    mn: { title: "Нэвтрэх", description: "Өөрийн хянах самбар, үр дүнг харахын тулд нэвтрэх." },
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const result = await signIn("credentials", {
+      redirect: false,
+      email,
+      password,
+    });
+    if (result?.error) alert(result.error);
+    else alert("Login successful!");
   };
-  const t = texts[language];
-  const pageBgClass = theme === "dark" ? "bg-black" : "bg-white";
-  const textColorClass = theme === "dark" ? "text-white" : "text-black";
 
   return (
-    <div className={`${pageBgClass} min-h-screen flex flex-col items-center justify-center px-6 py-16`}>
-      <h1 className={`${textColorClass} text-4xl font-bold mb-4`}>{t.title}</h1>
-      <p className={`${textColorClass} text-lg text-center max-w-2xl`}>{t.description}</p>
-    </div>
+    <form onSubmit={handleSubmit} className="max-w-md mx-auto mt-10 p-6 shadow rounded">
+      <h1 className="text-2xl font-bold mb-4">Login</h1>
+      <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="mb-2 w-full p-2 border rounded" />
+      <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} className="mb-2 w-full p-2 border rounded" />
+      <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded">Login</button>
+    </form>
   );
 }

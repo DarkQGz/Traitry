@@ -1,20 +1,84 @@
 "use client";
+import { useState } from "react";
 
-import { useThemeLanguage } from "../../ThemeLanguageContext"; // adjust path depending on location
 export default function RegisterPage() {
-  const { theme, language } = useThemeLanguage();
-  const texts = {
-    en: { title: "Register", description: "Create an account to start your personality journey." },
-    mn: { title: "Бүртгүүлэх", description: "Өөрийн зан төлөвийн аяллаа эхлүүлэхийн тулд бүртгүүлэх." },
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message || "Registration failed");
+      } else {
+        alert("Registration successful! You can now log in.");
+        setName("");
+        setEmail("");
+        setPassword("");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
-  const t = texts[language];
-  const pageBgClass = theme === "dark" ? "bg-black" : "bg-white";
-  const textColorClass = theme === "dark" ? "text-white" : "text-black";
 
   return (
-    <div className={`${pageBgClass} min-h-screen flex flex-col items-center justify-center px-6 py-16`}>
-      <h1 className={`${textColorClass} text-4xl font-bold mb-4`}>{t.title}</h1>
-      <p className={`${textColorClass} text-lg text-center max-w-2xl`}>{t.description}</p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg"
+      >
+        <h1 className="text-3xl font-bold text-center mb-6">Register</h1>
+
+        <label className="block mb-2 font-semibold">Name</label>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+          className="w-full p-3 border border-gray-300 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+
+        <label className="block mb-2 font-semibold">Email</label>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          className="w-full p-3 border border-gray-300 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+
+        <label className="block mb-2 font-semibold">Password</label>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          className="w-full p-3 border border-gray-300 rounded mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          {loading ? "Registering..." : "Register"}
+        </button>
+      </form>
     </div>
   );
 }
